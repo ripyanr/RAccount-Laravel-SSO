@@ -25,3 +25,10 @@ parameters:
         -
             message: '#Class Raccount\\Sso\\Resolvers\\DefaultUserResolver not found\.#'
             path: src/config/raccount-sso.php
+
+        # Pest binds test closures to the TestCase at runtime, but without the
+        # Pest PHPStan plugin `$this` inside an `it(...)` closure is resolved
+        # against the surrounding PendingCalls\TestCall.
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::fail\(\)#'
+            path: tests/Feature/ClientTest.php
