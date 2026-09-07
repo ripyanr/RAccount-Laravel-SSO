@@ -3,7 +3,7 @@
     "name": "raccount/laravel-sso",
     "description": "Single Sign-On client SDK for RAccount - OAuth 2.0 authorization code + PKCE, refresh rotation, webhooks, and directory sync for Laravel applications.",
     "keywords": ["raccount", "laravel", "sso", "oauth2", "single-sign-on"],
-    "homepage": "https://github.com/ripyanr/RAccount-Laravel-SDK",
+    "homepage": "https://github.com/ripyanr/RAccount-Laravel-SSO",
     "license": "MIT",
     "authors": [
         {
