@@ -86,6 +86,30 @@ it('updates the linked account status from the built-in listener', function (): 
         ->toBe(RaccountAccount::STATUS_SUSPENDED);
 });
 
+it('refreshes the snapshot on user.updated without resurrecting a suspended account', function (): void {
+    $user = User::create(['name' => 'Budi', 'email' => 'budi@example.com']);
+    RaccountAccount::query()->create([
+        'raccount_sub' => '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0',
+        'user_type' => RaccountAccount::morphTypeFor($user),
+        'user_id' => $user->id,
+        'status' => RaccountAccount::STATUS_SUSPENDED,
+        'name' => 'Budi',
+    ]);
+
+    postWebhook([
+        'id' => '01JYYYYYYYYYYYYYYYYYYYYYYYY',
+        'type' => 'user.updated',
+        'occurred_at' => CarbonImmutable::now('UTC')->toIso8601ZuluString(),
+        'actor' => ['type' => 'admin', 'id' => 'x'],
+        'data' => ['sub' => '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0', 'name' => 'New Name'],
+    ])->assertOk();
+
+    $account = RaccountAccount::query()->where('raccount_sub', '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0')->first();
+
+    expect($account->name)->toBe('New Name')
+        ->and($account->status)->toBe(RaccountAccount::STATUS_SUSPENDED);
+});
+
 it('returns 500 when a listener throws so the server retries', function (): void {
     Event::listen(UserUpdated::class, static function (): void {
         throw new RuntimeException('listener exploded');

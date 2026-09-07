@@ -101,6 +101,19 @@ it('denies linking an existing email when auto-link is disabled', function (): v
     resolveUser(userInfo());
 })->throws(AccountLinkageDenied::class);
 
+it('refuses to auto-link an existing local user when the RAccount email is unverified', function (): void {
+    config()->set('raccount-sso.user.require_verified_email', false);
+
+    $user = User::create(['name' => 'Budi', 'email' => 'budi@example.com']);
+
+    expect(fn () => resolveUser(userInfo(['email_verified' => false])))->toThrow(AccountLinkageDenied::class);
+
+    expect(RaccountAccount::query()
+        ->where('raccount_sub', '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0')
+        ->where('user_id', $user->id)
+        ->exists())->toBeFalse();
+});
+
 it('provisions a new local user with mapped attributes', function (): void {
     $resolved = resolveUser(userInfo());
 

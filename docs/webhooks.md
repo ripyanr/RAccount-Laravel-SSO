@@ -124,10 +124,12 @@ exception).
 
 With `webhooks.listeners_enabled => true` (the default), the package registers
 `Raccount\Sso\Listeners\UpdateAccountStatus` on the five user events. It looks up the
-`raccount_accounts` row by `sub` and, if present, updates its `status`
-(`user.suspended` → `suspended`, `user.deleted` → `deleted`, the other three → `active`) and
-refreshes the `name` / `email` / `picture_url` snapshot when those keys appear in `data`. Rows
-for unknown subjects are ignored silently. Combined with
+`raccount_accounts` row by `sub` and, if present, refreshes the `name` / `email` / `picture_url`
+snapshot when those keys appear in `data`. The `status` column only changes on the four
+status-defining events: `user.created` and `user.reactivated` → `active`, `user.suspended` →
+`suspended`, `user.deleted` → `deleted`. A `user.updated` delivery updates the snapshot only —
+a profile edit never resurrects an account that was suspended or deleted server-side. Rows for
+unknown subjects are ignored silently. Combined with
 `middleware.enforce_status => true`, this is what turns a server-side suspension into an
 immediate local logout — see [security.md](security.md#session--token-lifetime).
 

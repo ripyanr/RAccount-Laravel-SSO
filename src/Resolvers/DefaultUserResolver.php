@@ -56,6 +56,12 @@ class DefaultUserResolver implements UserResolver
                         );
                     }
 
+                    if ($userinfo->emailVerified !== true) {
+                        throw new AccountLinkageDenied(
+                            "A local account already exists for {$userinfo->email}; the RAccount email address is not verified.",
+                        );
+                    }
+
                     $this->createAccount($existing, $userinfo);
 
                     return $existing;

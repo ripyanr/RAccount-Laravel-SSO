@@ -27,6 +27,14 @@ it('lets authenticated users with an active account through', function (): void 
     $this->actingAs($user)->get('/protected')->assertOk();
 });
 
+it('lets authenticated users without a raccount account through when enforcing status', function (): void {
+    config()->set('raccount-sso.middleware.enforce_status', true);
+
+    $user = User::create(['name' => 'Budi', 'email' => 'budi@example.com']);
+
+    $this->actingAs($user)->get('/protected')->assertOk();
+});
+
 it('logs out users whose raccount account is not active', function (): void {
     config()->set('raccount-sso.middleware.enforce_status', true);
 

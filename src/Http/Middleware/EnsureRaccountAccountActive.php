@@ -19,12 +19,13 @@ class EnsureRaccountAccountActive
             return $next($request);
         }
 
-        $active = RaccountAccount::query()
+        // Enforcement is scoped to users who actually have a linked RAccount
+        // identity: mixed-mode applications keep purely local users working.
+        $account = RaccountAccount::query()
             ->forUser($user)
-            ->where('status', RaccountAccount::STATUS_ACTIVE)
-            ->exists();
+            ->first();
 
-        if ($active) {
+        if ($account === null || $account->status === RaccountAccount::STATUS_ACTIVE) {
             return $next($request);
         }
 
