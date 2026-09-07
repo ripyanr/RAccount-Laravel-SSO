@@ -26,6 +26,9 @@ parameters:
         -
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::fail\(\)#'
             path: tests/Feature/ClientTest.php
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::fail\(\)#'
+            path: tests/Feature/TokenServiceTest.php
 
         # The morph target of RaccountAccount::user() is defined by the
         # consuming application, so the primary key of `$account->user` cannot

@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Raccount\Sso\Client\RaccountClient;
 use Raccount\Sso\Contracts\UserResolver;
 use Raccount\Sso\Resolvers\DefaultUserResolver;
+use Raccount\Sso\Tokens\TokenService;
 
 final class RaccountSsoServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,8 @@ final class RaccountSsoServiceProvider extends ServiceProvider
             UserResolver::class,
             (string) config('raccount-sso.user.resolver', DefaultUserResolver::class),
         );
+
+        $this->app->singleton(TokenService::class);
     }
 
     public function boot(): void
