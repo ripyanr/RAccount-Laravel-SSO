@@ -3,6 +3,7 @@
 namespace Raccount\Sso;
 
 use Illuminate\Http\Client\Factory;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Raccount\Sso\Client\RaccountClient;
@@ -10,6 +11,8 @@ use Raccount\Sso\Contracts\UserResolver;
 use Raccount\Sso\Http\Controllers\CallbackController;
 use Raccount\Sso\Http\Controllers\LogoutController;
 use Raccount\Sso\Http\Controllers\RedirectController;
+use Raccount\Sso\Http\Middleware\EnsureRaccountAccountActive;
+use Raccount\Sso\Http\Middleware\RedirectAuthRoutesToSso;
 use Raccount\Sso\Resolvers\DefaultUserResolver;
 use Raccount\Sso\Tokens\TokenService;
 
@@ -42,6 +45,16 @@ final class RaccountSsoServiceProvider extends ServiceProvider
         ], 'raccount-sso-migrations');
 
         $this->registerRoutes();
+
+        $this->app->make(Router::class)->aliasMiddleware(
+            'raccount.active',
+            EnsureRaccountAccountActive::class,
+        );
+
+        $this->app->make(Router::class)->aliasMiddleware(
+            'raccount.exclusive',
+            RedirectAuthRoutesToSso::class,
+        );
     }
 
     private function registerRoutes(): void

@@ -71,3 +71,9 @@ parameters:
         -
             message: '#Unable to resolve the template type TAndValue in call to method Pest\\Expectation<bool\|null>::and\(\)#'
             path: tests/Feature/FlowTest.php
+
+        # MiddlewareTest comes verbatim from the task brief. Pest binds test
+        # closures to the TestCase at runtime (same false positive as above).
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::(get|actingAs)\(\)#'
+            path: tests/Feature/MiddlewareTest.php
