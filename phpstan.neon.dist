@@ -85,6 +85,13 @@ parameters:
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::artisan\(\)#'
             path: tests/Feature/CommandsTest.php
 
+        # ButtonTest comes verbatim from the task brief. Pest binds test
+        # closures to the TestCase at runtime (same false positive as above);
+        # blade()/withViewErrors() resolve against the bound TestCase.
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::(withViewErrors|blade)\(\)#'
+            path: tests/Feature/ButtonTest.php
+
         # The occurred_at guard comes verbatim from the task brief. PHPStan
         # narrows `mixed` to exclude null after isset(), so the defensive null
         # check against the untyped JSON payload is reported as always true.

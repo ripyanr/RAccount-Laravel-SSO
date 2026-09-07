@@ -60,6 +60,12 @@ final class RaccountSsoServiceProvider extends ServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'raccount-sso-migrations');
 
+        $this->loadViewsFrom(__DIR__.'/resources/views', 'raccount');
+
+        $this->publishes([
+            __DIR__.'/resources/views' => resource_path('views/vendor/raccount'),
+        ], 'raccount-sso-views');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 CheckCommand::class,
