@@ -6,3 +6,22 @@ parameters:
     paths:
         - src
         - tests
+
+    # The package ships its config from src/config (merged into the host app by
+    # the service provider), so env() calls there are legitimate and the config
+    # parser should read those files.
+    configDirectories:
+        - src/config
+
+    ignoreErrors:
+        # The default user model refers to the consuming application's class
+        # and never exists inside this package.
+        -
+            message: '#Class App\\Models\\User not found\.#'
+            path: src/config/raccount-sso.php
+
+        # The default resolver class is introduced by a later task; drop this
+        # ignore once Raccount\Sso\Resolvers\DefaultUserResolver exists.
+        -
+            message: '#Class Raccount\\Sso\\Resolvers\\DefaultUserResolver not found\.#'
+            path: src/config/raccount-sso.php
