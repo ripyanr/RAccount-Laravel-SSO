@@ -3,11 +3,14 @@
 namespace Raccount\Sso\Client;
 
 use Closure;
+use DateTimeInterface;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Raccount\Sso\Client\Dto\DirectoryPage;
 use Raccount\Sso\Client\Dto\IntrospectionResult;
+use Raccount\Sso\Client\Dto\TokenPair;
 use Raccount\Sso\Client\Dto\UserInfo;
 use Raccount\Sso\Exceptions\ConfigurationInvalid;
 use Raccount\Sso\Exceptions\InvalidGrant;
@@ -86,6 +89,95 @@ class RaccountClient
         }
 
         return true;
+    }
+
+    public function authorizationUrl(string $state, string $codeChallenge, ?string $prompt = null): string
+    {
+        $query = array_filter([
+            'response_type' => 'code',
+            'client_id' => $this->clientId(),
+            'redirect_uri' => (string) config('raccount-sso.client.redirect_uri'),
+            'scope' => implode(' ', (array) config('raccount-sso.scopes', ['profile', 'email'])),
+            'state' => $state,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+            'prompt' => $prompt,
+        ], static fn ($value): bool => $value !== null && $value !== '');
+
+        return $this->url('authorize_path').'?'.http_build_query($query);
+    }
+
+    public function exchangeCode(string $code, string $codeVerifier): TokenPair
+    {
+        $response = $this->tokenRequest([
+            'grant_type' => 'authorization_code',
+            'redirect_uri' => (string) config('raccount-sso.client.redirect_uri'),
+            'code' => $code,
+            'code_verifier' => $codeVerifier,
+        ]);
+
+        return TokenPair::fromTokenResponse((array) $response->json());
+    }
+
+    public function refresh(string $refreshToken): TokenPair
+    {
+        $response = $this->tokenRequest([
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $refreshToken,
+        ]);
+
+        return TokenPair::fromTokenResponse((array) $response->json());
+    }
+
+    public function clientCredentialsToken(string $scope): TokenPair
+    {
+        $response = $this->tokenRequest([
+            'grant_type' => 'client_credentials',
+            'scope' => $scope,
+        ]);
+
+        return TokenPair::fromTokenResponse((array) $response->json());
+    }
+
+    public function directoryPage(
+        string $accessToken,
+        ?string $cursor = null,
+        ?DateTimeInterface $updatedSince = null,
+        ?int $limit = null,
+    ): DirectoryPage {
+        $response = $this->send(
+            fn (): Response => $this->http()
+                ->withToken($accessToken)
+                ->acceptJson()
+                ->get($this->url('directory_path'), array_filter([
+                    'cursor' => $cursor,
+                    'updated_since' => $updatedSince?->format(DateTimeInterface::ATOM),
+                    'limit' => $limit,
+                ], static fn ($value): bool => $value !== null && $value !== ''))
+        );
+
+        if (! $response->successful()) {
+            throw new RequestFailed("RAccount directory request failed (HTTP {$response->status()}).");
+        }
+
+        return DirectoryPage::fromResponse((array) $response->json());
+    }
+
+    /**
+     * @param  array<string, string>  $form
+     */
+    private function tokenRequest(array $form): Response
+    {
+        $response = $this->send(
+            fn (): Response => $this->http()
+                ->withBasicAuth($this->clientId(), $this->clientSecret())
+                ->asForm()
+                ->post($this->url('token_path'), $form)
+        );
+
+        $this->assertOAuthResponse($response);
+
+        return $response;
     }
 
     // ------------------------------------------------------------------
