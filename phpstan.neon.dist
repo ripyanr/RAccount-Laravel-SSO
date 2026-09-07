@@ -103,3 +103,10 @@ parameters:
             message: '#Unable to resolve the template type TValue in call to function expect#'
             path: tests/Feature/WebhookTest.php
 
+        # DirectoryTest comes verbatim from the task brief; the
+        # directoryRecord() helper keeps the brief's untyped array signature
+        # (same class of false positive as postWebhook() above).
+        -
+            message: '#Function directoryRecord\(\) return type has no value type specified in iterable type array\.#'
+            path: tests/Feature/DirectoryTest.php
+

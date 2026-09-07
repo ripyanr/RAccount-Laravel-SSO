@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Raccount\Sso\Client\RaccountClient;
 use Raccount\Sso\Contracts\UserResolver;
+use Raccount\Sso\Directory\ClientCredentialsManager;
+use Raccount\Sso\Directory\DirectorySyncService;
 use Raccount\Sso\Events\UserCreated;
 use Raccount\Sso\Events\UserDeleted;
 use Raccount\Sso\Events\UserReactivated;
@@ -40,6 +42,9 @@ final class RaccountSsoServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(TokenService::class);
+
+        $this->app->singleton(ClientCredentialsManager::class);
+        $this->app->singleton(DirectorySyncService::class);
     }
 
     public function boot(): void
