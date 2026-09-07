@@ -57,3 +57,17 @@ parameters:
         -
             message: '#Ternary operator condition is always true\.#'
             path: tests/Feature/ResolverTest.php
+
+        # FlowTest comes verbatim from the task brief. Pest binds test closures
+        # to the TestCase at runtime (same false positive as above), and
+        # `Auth::user()` statically resolves to the generic foundation User
+        # whose columns the fixture migration only creates at runtime.
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::(get|actingAs)\(\)#'
+            path: tests/Feature/FlowTest.php
+        -
+            message: '#Access to an undefined property Illuminate\\Foundation\\Auth\\User::\$email\.#'
+            path: tests/Feature/FlowTest.php
+        -
+            message: '#Unable to resolve the template type TAndValue in call to method Pest\\Expectation<bool\|null>::and\(\)#'
+            path: tests/Feature/FlowTest.php
