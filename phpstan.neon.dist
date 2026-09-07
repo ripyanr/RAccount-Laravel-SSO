@@ -20,12 +20,6 @@ parameters:
             message: '#Class App\\Models\\User not found\.#'
             path: src/config/raccount-sso.php
 
-        # The default resolver class is introduced by a later task; drop this
-        # ignore once Raccount\Sso\Resolvers\DefaultUserResolver exists.
-        -
-            message: '#Class Raccount\\Sso\\Resolvers\\DefaultUserResolver not found\.#'
-            path: src/config/raccount-sso.php
-
         # Pest binds test closures to the TestCase at runtime, but without the
         # Pest PHPStan plugin `$this` inside an `it(...)` closure is resolved
         # against the surrounding PendingCalls\TestCall.
@@ -43,3 +37,20 @@ parameters:
         -
             message: '#Unable to resolve the template type TAndValue in call to method Pest\\Expectation<Illuminate\\Database\\Eloquent\\Model\|null>::and\(\)#'
             path: tests/Feature/ModelsTest.php
+
+        # The resolver contract intentionally returns the generic
+        # Authenticatable interface, so the fixture user's columns cannot be
+        # resolved statically. The ternary comes verbatim from the task brief
+        # ($resolved is always truthy once resolve() has returned).
+        -
+            message: '#Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable::\$(id|name|email)\.#'
+            path: tests/Feature/ResolverTest.php
+        -
+            message: '#Unable to resolve the template type TValue in call to function expect#'
+            path: tests/Feature/ResolverTest.php
+        -
+            message: '#Unable to resolve the template type TAndValue in call to method Pest\\Expectation<.+>::and\(\)#'
+            path: tests/Feature/ResolverTest.php
+        -
+            message: '#Ternary operator condition is always true\.#'
+            path: tests/Feature/ResolverTest.php

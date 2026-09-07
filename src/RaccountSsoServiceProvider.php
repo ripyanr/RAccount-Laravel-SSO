@@ -5,6 +5,8 @@ namespace Raccount\Sso;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\ServiceProvider;
 use Raccount\Sso\Client\RaccountClient;
+use Raccount\Sso\Contracts\UserResolver;
+use Raccount\Sso\Resolvers\DefaultUserResolver;
 
 final class RaccountSsoServiceProvider extends ServiceProvider
 {
@@ -15,6 +17,11 @@ final class RaccountSsoServiceProvider extends ServiceProvider
         $this->app->singleton('raccount-sso.client', static fn ($app): RaccountClient => new RaccountClient(
             $app->make(Factory::class),
         ));
+
+        $this->app->bind(
+            UserResolver::class,
+            (string) config('raccount-sso.user.resolver', DefaultUserResolver::class),
+        );
     }
 
     public function boot(): void
