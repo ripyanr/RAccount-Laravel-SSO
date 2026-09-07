@@ -141,7 +141,10 @@ interface UserResolver
 1. Cari `RaccountAccount` by `raccount_sub` → jika ditemukan dan user induk masih ada (tidak soft-deleted) → login; perbarui snapshot `name`/`email`/`picture_url` bila berubah.
 2. Tidak ada link:
    - Jika `require_verified_email=true` (default) dan `email_verified=false` → tolak (`EmailNotVerified` exception, render halaman penjelasan).
-   - Jika `auto_link_verified_email=true` dan `email_verified=true` → cari user lokal berdasarkan email (lowercase, unique) → ditemukan: buat link. Tidak ditemukan: JIT provisioning user baru via config `user.attributes` (closure/array mapping `UserInfo` → atribut model, default `name`/`email`).
+   - Cari user lokal berdasarkan email (lowercase, unique):
+     - Ditemukan dan `auto_link_verified_email=true` (default) dan `email_verified=true` → buat link.
+     - Ditemukan tetapi `auto_link_verified_email=false` → tolak (`AccountLinkageDenied`: akun sudah ada, penautan manual melalui aplikasi).
+   - Tidak ditemukan → JIT provisioning user baru via config `user.attributes` (closure/array mapping `UserInfo` → atribut model, default `name`/`email`).
 3. Aplikasi dengan model user non-standar (username wajib, enum status, dst.) meng-override resolver di config — satu method, tidak ada asumsi skema.
 
 ### 5.5 Storage
@@ -172,17 +175,20 @@ Model `RaccountAccount`: encrypted casts untuk kedua token (AES-256-GCM via APP_
 
 Route `POST /raccount/webhook` (path configurable), CSRF-exempt, `throttle:60,1`.
 
-`Webhooks\Verifier` memproses berurutan — gagal di langkah mana pun = respons 200 dengan body kosong (server webhook tidak perlu tahu detail kegagalan; dicatat di log aplikasi):
+`Webhooks\Verifier` memproses berurutan. Kegagalan **verifikasi** (langkah 1–4) bersifat permanen → respons `200` dengan body kosong agar retry ladder server tidak mencoba ulang sesuatu yang tidak akan pernah berhasil; dicatat di log aplikasi:
 
 1. Baca raw body (controller mengambil content sebelum parsing).
 2. HMAC-SHA256 dengan **setiap** secret dari config array `webhooks.secrets` (dukungan rotasi) → `hash_equals` constant-time vs header `X-RAccount-Signature` (`sha256=<hex>`).
 3. `X-RAccount-Timestamp` dalam ±`webhooks.tolerance` detik (default 300).
-4. Insert-or-ignore `event_id` ke `raccount_webhook_events` — insert gagal (duplikat) = berhenti (sudah diproses).
+4. Klaim event: insert baris `event_id` ke `raccount_webhook_events` dengan `processed_at = null` — insert gagal (duplikat): jika `processed_at` sudah terisi → berhenti (sudah sukses diproses); jika masih null → lanjut (percobaan ulang dari kegagalan sebelumnya; semantik at-least-once).
 5. Dispatch event Laravel: `WebhookReceived` (generik, payload mentah) + event spesifik `UserCreated` / `UserUpdated` / `UserSuspended` / `UserReactivated` / `UserDeleted` (payload DTO).
+6. Set `processed_at` bila semua listener sukses.
+
+Kegagalan **listener** aplikasi pada langkah 5–6 → respons `500` (dengan `Retry-After` jujur sederhana) sehingga ladder retry server menjalankan ulang delivery; karenanya listener aplikasi **wajib idempoten** (didokumentasikan).
 
 Listener default SDK `UpdateAccountStatus` (register otomatis, bisa dimatikan): mencocokkan `raccount_sub` → memperbarui `status`, snapshot, dan `processed_at`. Aplikasi bereaksi dengan listener sendiri (mis. mengubah status user lokal, mengirim email).
 
-**Invalidasi sesi**: middleware alias `raccount.active` — bila user terautentikasi memiliki `RaccountAccount` dengan status bukan `active` → logout paksa + flash + redirect login. Pengecekan satu query per request (atau cache request-scope). Aktif via config `middleware.enforce_status` (default `false`, direkomendasikan `true` saat mode exclusive). Catatan: karena server tidak punya back-channel logout, mekanisme inilah satu-satunya cara mematikan sesi lokal saat user di-suspend/dihapus (latensi maksimum = waktu sampai request berikutnya).
+**Invalidasi sesi**: middleware alias `raccount.active` — bila user terautentikasi memiliki `RaccountAccount` dengan status bukan `active` → logout paksa + flash + redirect login. Pengecekan satu query indexed per request. Aktif via config `middleware.enforce_status` (default `false`, direkomendasikan `true` saat mode exclusive). Catatan: karena server tidak punya back-channel logout, mekanisme inilah satu-satunya cara mematikan sesi lokal saat user di-suspend/dihapus (latensi maksimum = waktu sampai request berikutnya).
 
 Command `raccount:prune-webhooks --days=30` untuk housekeeping.
 
