@@ -102,6 +102,31 @@ it('gives up after the configured attempts', function (): void {
     app(RaccountClient::class)->ping();
 })->throws(RequestFailed::class);
 
+it('retries connection errors and then succeeds', function (): void {
+    $calls = 0;
+    Http::fake(function () use (&$calls) {
+        $calls++;
+
+        if ($calls === 1) {
+            return Http::failedConnection('connection refused');
+        }
+
+        return Http::response(['status' => 'ok']);
+    });
+
+    expect(app(RaccountClient::class)->ping())->toBeTrue();
+
+    Http::assertSentCount(2);
+});
+
+it('gives up after repeated connection errors', function (): void {
+    config()->set('raccount-sso.http.attempts', 2);
+    config()->set('raccount-sso.http.backoff_ms', 1);
+    Http::fake(fn () => Http::failedConnection('connection refused'));
+
+    app(RaccountClient::class)->ping();
+})->throws(RequestFailed::class);
+
 it('surfaces rate limits with the retry-after header', function (): void {
     Http::fake(['account.test/api/v1/userinfo' => Http::response(
         ['type' => 'https://raccount.reducates.id/problems/rate-limited', 'title' => 'Rate limited', 'status' => 429, 'detail' => 'Slow down.'],
