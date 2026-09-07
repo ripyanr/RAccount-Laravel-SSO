@@ -53,6 +53,12 @@ it('syncs the directory', function (): void {
     $this->artisan('raccount:directory:sync')->assertSuccessful();
 });
 
+it('fails cleanly when --since is not a valid timestamp', function (): void {
+    $this->artisan('raccount:directory:sync', ['--since' => 'not-a-timestamp'])
+        ->expectsOutputToContain('Invalid --since value')
+        ->assertFailed();
+});
+
 it('prunes old webhook events', function (): void {
     RaccountWebhookEvent::query()->create([
         'event_id' => '01JABCDEFGHJKMNPQRSTVWXYZ',

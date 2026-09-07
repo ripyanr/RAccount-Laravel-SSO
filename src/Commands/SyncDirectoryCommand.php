@@ -3,6 +3,7 @@
 namespace Raccount\Sso\Commands;
 
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Command;
 use Raccount\Sso\Directory\DirectorySyncService;
 use Raccount\Sso\Exceptions\RaccountException;
@@ -16,9 +17,17 @@ final class SyncDirectoryCommand extends Command
 
     public function handle(DirectorySyncService $service): int
     {
-        $since = $this->option('since') !== null
-            ? CarbonImmutable::parse((string) $this->option('since'))
-            : null;
+        $since = null;
+
+        if ($this->option('since') !== null) {
+            try {
+                $since = CarbonImmutable::parse((string) $this->option('since'));
+            } catch (InvalidFormatException) {
+                $this->components->error('Invalid --since value; use an ISO-8601 timestamp, e.g. 2026-09-01T00:00:00Z.');
+
+                return self::FAILURE;
+            }
+        }
 
         $count = 0;
         $startedAt = microtime(true);
