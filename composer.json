@@ -1,0 +1,61 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "raccount/laravel-sso",
+    "description": "Single Sign-On client SDK for RAccount - OAuth 2.0 authorization code + PKCE, refresh rotation, webhooks, and directory sync for Laravel applications.",
+    "keywords": ["raccount", "laravel", "sso", "oauth2", "single-sign-on"],
+    "homepage": "https://github.com/raccount/laravel-sso",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "RAccount Team"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/http": "^13.0",
+        "illuminate/support": "^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.11",
+        "laravel/pint": "^1.27",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^4.7",
+        "pestphp/pest-plugin-laravel": "^4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Raccount\\Sso\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Raccount\\Sso\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Raccount\\Sso\\RaccountSsoServiceProvider"
+            ],
+            "aliases": {
+                "Raccount": "Raccount\\Sso\\Facades\\Raccount"
+            }
+        }
+    }
+}
