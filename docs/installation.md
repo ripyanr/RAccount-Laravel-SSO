@@ -74,7 +74,7 @@ with the `sync:read` scope.
 ## 5. Configure your environment
 
 ```env
-RACCOUNT_SSO_SERVER_URL=https://account.reducates.id
+RACCOUNT_SSO_SERVER_URL=https://account.reducates.com
 RACCOUNT_SSO_CLIENT_ID=your-client-id
 RACCOUNT_SSO_CLIENT_SECRET=your-client-secret
 RACCOUNT_SSO_REDIRECT_URI=https://your-app.example.com/raccount/callback

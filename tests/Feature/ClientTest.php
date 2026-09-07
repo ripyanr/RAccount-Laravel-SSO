@@ -51,7 +51,7 @@ it('parses userinfo claims', function (): void {
 
 it('maps userinfo problem details to an exception', function (): void {
     Http::fake(['account.test/api/v1/userinfo' => Http::response([
-        'type' => 'https://raccount.reducates.id/problems/insufficient-scope',
+        'type' => 'https://raccount.reducates.com/problems/insufficient-scope',
         'title' => 'Insufficient scope',
         'status' => 403,
         'detail' => 'The access token does not carry a scope required by this endpoint.',
@@ -129,7 +129,7 @@ it('gives up after repeated connection errors', function (): void {
 
 it('surfaces rate limits with the retry-after header', function (): void {
     Http::fake(['account.test/api/v1/userinfo' => Http::response(
-        ['type' => 'https://raccount.reducates.id/problems/rate-limited', 'title' => 'Rate limited', 'status' => 429, 'detail' => 'Slow down.'],
+        ['type' => 'https://raccount.reducates.com/problems/rate-limited', 'title' => 'Rate limited', 'status' => 429, 'detail' => 'Slow down.'],
         429,
         ['Retry-After' => '17'],
     )]);

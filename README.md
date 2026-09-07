@@ -3,7 +3,7 @@
 [![run-tests](https://github.com/ripyanr/RAccount-Laravel-SSO/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ripyanr/RAccount-Laravel-SSO/actions/workflows/run-tests.yml)
 [![Packagist](https://img.shields.io/packagist/v/raccount/laravel-sso.svg)](https://packagist.org/packages/raccount/laravel-sso)
 
-Single Sign-On client SDK for [RAccount](https://account.reducates.id) — the Reducates ecosystem
+Single Sign-On client SDK for [RAccount](https://account.reducates.com) — the Reducates ecosystem
 identity provider. Implements the full OAuth 2.0 authorization-code + PKCE flow, refresh-token
 rotation, signed webhooks, and the M2M directory lookup for Laravel 13 applications.
 
@@ -45,7 +45,7 @@ The service provider and `Raccount` facade are auto-discovered.
 2. Configure your environment:
 
 ```env
-RACCOUNT_SSO_SERVER_URL=https://account.reducates.id
+RACCOUNT_SSO_SERVER_URL=https://account.reducates.com
 RACCOUNT_SSO_CLIENT_ID=your-client-id
 RACCOUNT_SSO_CLIENT_SECRET=your-client-secret
 RACCOUNT_SSO_REDIRECT_URI=https://your-app/raccount/callback
