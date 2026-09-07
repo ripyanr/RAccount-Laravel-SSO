@@ -1,6 +1,6 @@
 # raccount/laravel-sso
 
-[![run-tests](https://github.com/raccount/laravel-sso/actions/workflows/run-tests.yml/badge.svg)](https://github.com/raccount/laravel-sso/actions/workflows/run-tests.yml)
+[![run-tests](https://github.com/ripyanr/RAccount-Laravel-SDK/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ripyanr/RAccount-Laravel-SDK/actions/workflows/run-tests.yml)
 [![Packagist](https://img.shields.io/packagist/v/raccount/laravel-sso.svg)](https://packagist.org/packages/raccount/laravel-sso)
 
 Single Sign-On client SDK for [RAccount](https://account.reducates.id) — the Reducates ecosystem
