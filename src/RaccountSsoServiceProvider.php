@@ -16,4 +16,15 @@ final class RaccountSsoServiceProvider extends ServiceProvider
             $app->make(Factory::class),
         ));
     }
+
+    public function boot(): void
+    {
+        $this->publishes([
+            __DIR__.'/config/raccount-sso.php' => config_path('raccount-sso.php'),
+        ], 'raccount-sso-config');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ], 'raccount-sso-migrations');
+    }
 }

@@ -32,3 +32,14 @@ parameters:
         -
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::fail\(\)#'
             path: tests/Feature/ClientTest.php
+
+        # The morph target of RaccountAccount::user() is defined by the
+        # consuming application, so the primary key of `$account->user` cannot
+        # be resolved statically. The fixture user always has an auto-increment
+        # id column.
+        -
+            message: '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$id\.#'
+            path: tests/Feature/ModelsTest.php
+        -
+            message: '#Unable to resolve the template type TAndValue in call to method Pest\\Expectation<Illuminate\\Database\\Eloquent\\Model\|null>::and\(\)#'
+            path: tests/Feature/ModelsTest.php
