@@ -25,7 +25,7 @@ settings.
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `server.base_url` | `string` | `RACCOUNT_SSO_SERVER_URL` | Base URL of the RAccount server. Must be `https://` outside local development. |
+| `server.base_url` | `string` | `RACCOUNT_SSO_SERVER_URL` (no default value) | Base URL of the RAccount server that serves this deployment — never hardcoded by the package. Any HTTPS URL is accepted; `http://` only with `APP_ENV=local` + `server.allow_insecure`. The client throws `ConfigurationInvalid` until it is set. |
 | `server.authorize_path` | `string` | `/oauth/authorize` | Authorization endpoint path. |
 | `server.token_path` | `string` | `/oauth/token` | Token endpoint path (code exchange, refresh, client credentials). |
 | `server.introspect_path` | `string` | `/oauth/introspect` | Token introspection endpoint path. |

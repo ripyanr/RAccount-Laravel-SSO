@@ -51,6 +51,11 @@ RACCOUNT_SSO_CLIENT_SECRET=your-client-secret
 RACCOUNT_SSO_REDIRECT_URI=https://your-app/raccount/callback
 ```
 
+> `RACCOUNT_SSO_SERVER_URL` is **not** hardcoded anywhere in the package — the value above is
+> just an example. Point it at whichever RAccount instance serves this deployment (production,
+> staging, or a private one); any HTTPS base URL works and the package refuses to boot the
+> client until it is set.
+
 3. Add a login button to your login page:
 
 ```blade
