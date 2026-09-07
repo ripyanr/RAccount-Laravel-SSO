@@ -73,8 +73,8 @@ return [
 
         // Supports an array so the secret can be rotated without downtime.
         'secrets' => array_filter([
-            env('RACCOUNT_WEBHOOK_SECRET'),
-            env('RACCOUNT_WEBHOOK_SECRET_PREVIOUS'),
+            env('RACCOUNT_SSO_WEBHOOK_SECRET'),
+            env('RACCOUNT_SSO_WEBHOOK_SECRET_PREVIOUS'),
         ]),
 
         // Accepted clock skew for X-RAccount-Timestamp, in seconds.

@@ -77,3 +77,29 @@ parameters:
         -
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::(get|actingAs)\(\)#'
             path: tests/Feature/MiddlewareTest.php
+
+        # The occurred_at guard comes verbatim from the task brief. PHPStan
+        # narrows `mixed` to exclude null after isset(), so the defensive null
+        # check against the untyped JSON payload is reported as always true.
+        -
+            message: '#Strict comparison using \!== between mixed and null will always evaluate to true\.#'
+            path: src/Webhooks/WebhookPayload.php
+
+        # WebhookTest comes verbatim from the task brief. Pest's test() helper
+        # statically resolves to TestCall|HigherOrderTapProxy (same class of
+        # false positive as the closure-binding ignores above), the helper
+        # keeps the brief's untyped array signatures, and the fixture user's
+        # columns only exist at runtime.
+        -
+            message: '#Function postWebhook\(\) (has parameter \$\w+ with no value type specified in iterable type array|return type with generic class Illuminate\\Testing\\TestResponse does not specify its types: TResponse)#'
+            path: tests/Feature/WebhookTest.php
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall\|Pest\\Support\\HigherOrderTapProxy::(transformHeadersToServerVars|call)\(\)#'
+            path: tests/Feature/WebhookTest.php
+        -
+            message: '#Access to an undefined property Raccount\\Sso\\Tests\\Fixtures\\User::\$name\.#'
+            path: tests/Feature/WebhookTest.php
+        -
+            message: '#Unable to resolve the template type TValue in call to function expect#'
+            path: tests/Feature/WebhookTest.php
+

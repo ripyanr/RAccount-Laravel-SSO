@@ -16,6 +16,12 @@ class RaccountWebhookEvent extends Model
 {
     protected $table = 'raccount_webhook_events';
 
+    protected $primaryKey = 'event_id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     protected $guarded = [];
 
     protected $casts = [

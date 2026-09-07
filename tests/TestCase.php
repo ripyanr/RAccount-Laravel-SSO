@@ -32,6 +32,11 @@ abstract class TestCase extends OrchestraTestCase
         $app['config']->set('raccount-sso.client.secret', str_repeat('a', 64));
         $app['config']->set('raccount-sso.client.redirect_uri', 'https://app.test/raccount/callback');
         $app['config']->set('raccount-sso.user.model', User::class);
+
+        // The webhook route and its built-in listeners are registered when the
+        // package provider boots, which happens before the test body runs, so
+        // webhooks must be enabled here rather than from a helper.
+        $app['config']->set('raccount-sso.webhooks.enabled', true);
     }
 
     protected function defineDatabaseMigrations(): void
