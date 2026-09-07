@@ -12,7 +12,9 @@ return [
     */
 
     'server' => [
-        'base_url' => env('RACCOUNT_SSO_SERVER_URL'),
+        // Defaults to the production RAccount instance; override per deployment
+        // (staging, private) via RACCOUNT_SSO_SERVER_URL.
+        'base_url' => env('RACCOUNT_SSO_SERVER_URL', 'https://account.reducates.com'),
         'authorize_path' => '/oauth/authorize',
         'token_path' => '/oauth/token',
         'introspect_path' => '/oauth/introspect',

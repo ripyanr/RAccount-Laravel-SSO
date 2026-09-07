@@ -80,6 +80,10 @@ RACCOUNT_SSO_CLIENT_SECRET=your-client-secret
 RACCOUNT_SSO_REDIRECT_URI=https://your-app.example.com/raccount/callback
 ```
 
+`RACCOUNT_SSO_SERVER_URL` defaults to `https://account.reducates.com` — set it only when this
+deployment talks to a different RAccount instance (staging or private). The remaining variables
+are always required and are issued when your client is registered.
+
 Optional variables:
 
 ```env
