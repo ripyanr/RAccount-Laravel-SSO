@@ -85,8 +85,9 @@ parameters:
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::artisan\(\)#'
             path: tests/Feature/CommandsTest.php
 
-        # ButtonTest comes verbatim from the task brief. Pest binds test
-        # closures to the TestCase at runtime (same false positive as above);
+        # ButtonTest is adapted from the task brief (Laravel 13 blade helper:
+        # $this->blade() + (string) cast). Pest binds test closures to the
+        # TestCase at runtime (same false positive as above);
         # blade()/withViewErrors() resolve against the bound TestCase.
         -
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::(withViewErrors|blade)\(\)#'

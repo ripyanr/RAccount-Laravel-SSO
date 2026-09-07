@@ -159,7 +159,7 @@ You can drive the walk yourself if you want custom pagination or progress report
 ```php
 use Raccount\Sso\Directory\DirectorySyncService;
 
-$records = app(DirectorySyncService::class)->users(since: $checkpoint);
+$records = app(DirectorySyncService::class)->users(updatedSince: $checkpoint);
 
 $records->each(function (\Raccount\Sso\Client\Dto\DirectoryUser $record): void {
     // The DirectoryUserRetrieved event has already fired for this record.
