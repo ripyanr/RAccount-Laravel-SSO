@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Raccount\Sso\Client\RaccountClient;
+use Raccount\Sso\Commands\CheckCommand;
+use Raccount\Sso\Commands\PruneWebhookEventsCommand;
+use Raccount\Sso\Commands\SyncDirectoryCommand;
 use Raccount\Sso\Contracts\UserResolver;
 use Raccount\Sso\Directory\ClientCredentialsManager;
 use Raccount\Sso\Directory\DirectorySyncService;
@@ -56,6 +59,14 @@ final class RaccountSsoServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'raccount-sso-migrations');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                CheckCommand::class,
+                SyncDirectoryCommand::class,
+                PruneWebhookEventsCommand::class,
+            ]);
+        }
 
         $this->registerRoutes();
 

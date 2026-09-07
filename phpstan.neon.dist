@@ -78,6 +78,13 @@ parameters:
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::(get|actingAs)\(\)#'
             path: tests/Feature/MiddlewareTest.php
 
+        # CommandsTest comes verbatim from the task brief. Pest binds test
+        # closures to the TestCase at runtime (same false positive as above);
+        # artisan() resolves against the bound TestCase when Pest executes.
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::artisan\(\)#'
+            path: tests/Feature/CommandsTest.php
+
         # The occurred_at guard comes verbatim from the task brief. PHPStan
         # narrows `mixed` to exclude null after isset(), so the defensive null
         # check against the untyped JSON payload is reported as always true.
