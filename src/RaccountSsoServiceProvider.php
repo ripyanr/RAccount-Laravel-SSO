@@ -46,6 +46,10 @@ final class RaccountSsoServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
         if (config('raccount-sso.routes.enabled') !== true) {
             return;
         }

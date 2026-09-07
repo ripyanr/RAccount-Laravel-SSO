@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Raccount\Sso\Client\RaccountClient;
 use Raccount\Sso\Contracts\UserResolver;
+use Raccount\Sso\Exceptions\AccountLinkageDenied;
 use Raccount\Sso\Tokens\TokenService;
 
 final class CallbackController
@@ -37,7 +38,14 @@ final class CallbackController
 
         $tokens = $this->client->exchangeCode((string) $request->query('code', ''), $verifier);
         $userinfo = $this->client->userinfo($tokens->accessToken);
-        $user = $resolver->resolve($userinfo);
+
+        try {
+            $user = $resolver->resolve($userinfo);
+        } catch (AccountLinkageDenied $exception) {
+            $request->session()->flash('raccount-sso.error', $exception->getMessage());
+
+            return redirect()->route((string) config('raccount-sso.redirects.on_error', 'login'));
+        }
 
         $this->tokens->storeFor($user, $userinfo, $tokens);
 

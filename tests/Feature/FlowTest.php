@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Raccount\Sso\Models\RaccountAccount;
+use Raccount\Sso\RaccountSsoServiceProvider;
 use Raccount\Sso\Tests\Fixtures\User;
 
 it('redirects to the authorization url with state and pkce in the session', function (): void {
@@ -77,6 +78,72 @@ it('redirects to the error route when the server reports an oauth error', functi
         ->assertSessionHas('raccount-sso.error');
 });
 
+it('redirects to the error route when the resolver rejects an unverified email', function (): void {
+    Route::get('/login')->name('login');
+
+    $this->get('/raccount/redirect');
+    $state = session('raccount-sso.state');
+
+    Http::fake([
+        'account.test/oauth/token' => Http::response([
+            'token_type' => 'Bearer',
+            'expires_in' => 900,
+            'access_token' => 'access-token-value',
+            'refresh_token' => 'refresh-token-value',
+            'scope' => 'profile email',
+        ]),
+        'account.test/api/v1/userinfo' => Http::response([
+            'sub' => '9a8b7c6d-5e4f-4321-0987-654321abcdef',
+            'name' => 'Budi Santoso',
+            'email' => 'unverified@example.com',
+            'email_verified' => false,
+        ]),
+    ]);
+
+    $this->get('/raccount/callback?code=auth-code&state='.$state)
+        ->assertRedirect('/login')
+        ->assertSessionHas('raccount-sso.error');
+
+    expect(Auth::check())->toBeFalse();
+});
+
+it('redirects to the error route when the linked account is suspended', function (): void {
+    Route::get('/login')->name('login');
+
+    $user = User::create(['name' => 'Budi', 'email' => 'budi@example.com']);
+    RaccountAccount::query()->create([
+        'raccount_sub' => '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0',
+        'user_type' => RaccountAccount::morphTypeFor($user),
+        'user_id' => $user->id,
+        'status' => RaccountAccount::STATUS_SUSPENDED,
+    ]);
+
+    $this->get('/raccount/redirect');
+    $state = session('raccount-sso.state');
+
+    Http::fake([
+        'account.test/oauth/token' => Http::response([
+            'token_type' => 'Bearer',
+            'expires_in' => 900,
+            'access_token' => 'access-token-value',
+            'refresh_token' => 'refresh-token-value',
+            'scope' => 'profile email',
+        ]),
+        'account.test/api/v1/userinfo' => Http::response([
+            'sub' => '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0',
+            'name' => 'Budi Santoso',
+            'email' => 'budi@example.com',
+            'email_verified' => true,
+        ]),
+    ]);
+
+    $this->get('/raccount/callback?code=auth-code&state='.$state)
+        ->assertRedirect('/login')
+        ->assertSessionHas('raccount-sso.error');
+
+    expect(Auth::check())->toBeFalse();
+});
+
 it('logs out, revokes, and destroys the session', function (): void {
     config()->set('raccount-sso.redirects.after_logout', '/bye');
 
@@ -101,4 +168,14 @@ it('logs out, revokes, and destroys the session', function (): void {
     expect($account->refresh_token)->toBeNull();
 
     Http::assertSent(fn ($request): bool => str_ends_with($request->url(), '/oauth/revoke'));
+});
+
+it('does not register routes when the application routes are cached', function (): void {
+    app()->instance('routes.cached', true);
+
+    $before = Route::getRoutes()->getRoutes();
+
+    (new RaccountSsoServiceProvider(app()))->boot();
+
+    expect(Route::getRoutes()->getRoutes())->toBe($before);
 });
