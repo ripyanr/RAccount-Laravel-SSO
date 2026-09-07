@@ -18,7 +18,9 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@latest
+        # Pinned to tag 2.6 (also currently `latest`) — supply-chain hardening
+        # given this workflow commits with contents: write.
+        uses: aglipanci/laravel-pint-action@36de00d5f5a8a4e12d443e01671daa12a18f4c79 # v2.6
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5

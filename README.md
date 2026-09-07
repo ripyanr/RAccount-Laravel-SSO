@@ -95,7 +95,8 @@ php artisan raccount:check
 ## Security
 
 If you discover a security vulnerability, please review [docs/security.md](docs/security.md) and
-contact the maintainers directly — do not open a public issue.
+report it privately using this repository's *Report a vulnerability* feature (the **Security**
+tab → **Report a vulnerability**, i.e. [GitHub private security advisories](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)) — do not open a public issue.
 
 ## License
 
