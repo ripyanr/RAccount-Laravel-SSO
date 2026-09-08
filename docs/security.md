@@ -65,6 +65,12 @@ not minutes — should combine all three layers:
 Together these close the loop: the webhook flips the status, the middleware enforces it on the
 next request, and the already-issued access token ages out within minutes.
 
+The reverse direction — a user signing out of their RAccount session directly at the SSO
+server — is closed by the `user.signed_out` webhook: the sign-out propagates to your
+application as a signed delivery, so a listener can end the user's local session
+immediately instead of waiting for the access token to age out. See
+[webhooks.md](webhooks.md#back-channel-logout-usersigned_out).
+
 ## Replay & reuse: the `invalid_grant` contract
 
 RAccount rotates the refresh token on every use and revokes the entire family when a rotated

@@ -33,7 +33,7 @@ signature, not by a session token.
 | --- | --- | --- |
 | `X-RAccount-Signature` | `sha256=` + 64 lowercase hex chars | HMAC-SHA256 of the **raw request body** using the shared secret. |
 | `X-RAccount-Event-Id` | ULID | Unique id of the event; the deduplication key. Echoed by the package as the primary key of the `raccount_webhook_events` claim row. |
-| `X-RAccount-Event-Type` | `user.created`, `user.updated`, `user.suspended`, `user.reactivated`, `user.deleted` | Discriminates the typed Laravel event dispatched after verification. |
+| `X-RAccount-Event-Type` | `user.created`, `user.updated`, `user.suspended`, `user.reactivated`, `user.deleted`, `user.signed_out` | Discriminates the typed Laravel event dispatched after verification. |
 | `X-RAccount-Timestamp` | Parseable datetime | Claimed signing time; accepted within `webhooks.tolerance` (default ±300 seconds) of the receiver's clock. |
 
 ## Payload shape
@@ -119,21 +119,75 @@ exception).
 | `Raccount\Sso\Events\UserSuspended` | `user.suspended` |
 | `Raccount\Sso\Events\UserReactivated` | `user.reactivated` |
 | `Raccount\Sso\Events\UserDeleted` | `user.deleted` |
+| `Raccount\Sso\Events\UserSignedOut` | `user.signed_out` |
 
 ## Built-in status listener
 
 With `webhooks.listeners_enabled => true` (the default), the package registers
-`Raccount\Sso\Listeners\UpdateAccountStatus` on the five user events. It looks up the
-`raccount_accounts` row by `sub` and, if present, refreshes the `name` / `email` / `picture_url`
-snapshot when those keys appear in `data`. The `status` column only changes on the four
-status-defining events: `user.created` and `user.reactivated` → `active`, `user.suspended` →
-`suspended`, `user.deleted` → `deleted`. A `user.updated` delivery updates the snapshot only —
-a profile edit never resurrects an account that was suspended or deleted server-side. Rows for
-unknown subjects are ignored silently. Combined with
+`Raccount\Sso\Listeners\UpdateAccountStatus` on the five lifecycle user events. It looks up
+the `raccount_accounts` row by `sub` and, if present, refreshes the `name` / `email` /
+`picture_url` snapshot when those keys appear in `data`. The `status` column only changes
+on the four status-defining events: `user.created` and `user.reactivated` → `active`,
+`user.suspended` → `suspended`, `user.deleted` → `deleted`. A `user.updated` delivery
+updates the snapshot only — a profile edit never resurrects an account that was suspended
+or deleted server-side. Rows for unknown subjects are ignored silently. `user.signed_out`
+is deliberately not registered with the built-in listener — ending the RAccount session
+is not an account-status change, so the `raccount_accounts` row is left untouched; see
+[Back-channel logout](#back-channel-logout-usersigned_out) below. Combined with
 `middleware.enforce_status => true`, this is what turns a server-side suspension into an
 immediate local logout — see [security.md](security.md#session--token-lifetime).
 
 Set `webhooks.listeners_enabled => false` if you want to own status handling entirely.
+
+## Back-channel logout (`user.signed_out`)
+
+When a user ends their RAccount session through an explicit sign-out at the SSO server
+(POST /logout there), the server delivers `user.signed_out` so your application can end
+its own local sessions for that user — back-channel logout. Delivery mechanics are
+identical to the other events (same headers, HMAC signature, tolerance window, retry
+ladder, and event-id deduplication), and the payload is the standard claims snapshot;
+`data.sub` identifies who signed out.
+
+Ending your local sessions is application-specific — the package dispatches the event and
+leaves the rest to you. For the `database` session driver:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use Illuminate\Support\Facades\DB;
+use Raccount\Sso\Events\UserSignedOut;
+use Raccount\Sso\Models\RaccountAccount;
+
+final class EndLocalSessionsOnSsoSignOut
+{
+    public function handle(UserSignedOut $event): void
+    {
+        $sub = $event->payload->sub();
+
+        if ($sub === null) {
+            return;
+        }
+
+        $account = RaccountAccount::query()->where('raccount_sub', $sub)->first();
+
+        if ($account === null) {
+            return; // unknown subject — nothing to end
+        }
+
+        // Idempotent by construction: deleting rows that may already be
+        // gone yields the same end state on a redelivered event.
+        DB::table('sessions')->where('user_id', $account->user_id)->delete();
+    }
+}
+```
+
+Register it as shown in [Writing a listener](#writing-a-listener), with
+`Event::listen(UserSignedOut::class, EndLocalSessionsOnSsoSignOut::class)`. Adapt the
+last line to your stack — revoke Sanctum tokens instead, or no-op entirely on the `file`
+driver (where other users' sessions cannot be targeted) and rely on short-lived access
+tokens plus `middleware.enforce_status` instead.
 
 ## Writing a listener
 

@@ -15,7 +15,8 @@ rotation, signed webhooks, and the M2M directory lookup for Laravel 13 applicati
 - **Token lifecycle**: encrypted at-rest storage, rotation-aware refresh (`invalid_grant` = logout,
   never retry), best-effort revocation on logout.
 - **Webhooks**: HMAC-SHA256 signature verification, ±5 min replay window, event-id deduplication,
-  Laravel events for user created/updated/suspended/reactivated/deleted.
+  Laravel events for user created/updated/suspended/reactivated/deleted, plus `user.signed_out`
+  (back-channel logout).
 - **Directory sync**: client-credentials M2M token with caching, cursor pagination,
   `DirectoryUserRetrieved` event stream, `raccount:directory:sync` command.
 - **Ops**: `raccount:check` diagnostics command, status middleware, exclusive-SSO middleware.

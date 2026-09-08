@@ -5,6 +5,16 @@ All notable changes to `raccount/laravel-sso` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Support for the `user.signed_out` webhook (back-channel logout): verified deliveries
+  dispatch `Raccount\Sso\Events\UserSignedOut`. The built-in `UpdateAccountStatus` listener
+  deliberately ignores the event — signing out of the RAccount session is not an
+  account-status change — so register your own listener to end local sessions (see
+  `docs/webhooks.md`).
+
 ## [1.0.0] - 2026-09-07
 
 ### Added
