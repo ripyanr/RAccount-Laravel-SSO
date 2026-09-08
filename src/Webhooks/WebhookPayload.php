@@ -7,6 +7,7 @@ use Raccount\Sso\Events\UserCreated;
 use Raccount\Sso\Events\UserDeleted;
 use Raccount\Sso\Events\UserEvent;
 use Raccount\Sso\Events\UserReactivated;
+use Raccount\Sso\Events\UserSignedOut;
 use Raccount\Sso\Events\UserSuspended;
 use Raccount\Sso\Events\UserUpdated;
 
@@ -54,6 +55,7 @@ final class WebhookPayload
             'user.suspended' => UserSuspended::class,
             'user.reactivated' => UserReactivated::class,
             'user.deleted' => UserDeleted::class,
+            'user.signed_out' => UserSignedOut::class,
             default => null,
         };
     }
